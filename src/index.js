@@ -1,18 +1,23 @@
-import express from "express";
-import cors from "cors";
 import dotenv from "dotenv";
+import app from "./app.js";
+import { connectRedis } from "./config/redis.js";
 
 dotenv.config();
 
-const app = express();
+const PORT = process.env.PORT || 3000;
 
-app.use(cors());
-app.use(express.json());
+const start = async () => {
+  try {
+    await connectRedis();
 
-app.get("/", (req, res) => {
-  res.send("API funcionando 🚀");
-});
+    app.listen(PORT, () => {
+      console.log(`🚀 Servidor en puerto ${PORT}`);
+    });
 
-app.listen(process.env.PORT, () => {
-  console.log(`Servidor corriendo en puerto ${process.env.PORT}`);
-});
+  } catch (error) {
+    console.error("Error iniciando servidor:", error);
+    process.exit(1);
+  }
+};
+
+start();
