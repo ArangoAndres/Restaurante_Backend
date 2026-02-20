@@ -6,9 +6,8 @@ export const createPedido = async (req, res) => {
       return res.status(400).json({ error: "Pedido vacío" });
     }
 
-    await savePedido(req.body);
-
-    res.json({ message: "Pedido guardado correctamente" });
+ await savePedido(req.body);
+res.json({ message: "Pedido guardado correctamente" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error guardando pedido" });

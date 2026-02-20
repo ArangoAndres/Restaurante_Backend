@@ -30,9 +30,20 @@ const setExpirationIfNeeded = async (key) => {
 export const savePedido = async (pedido) => {
   const key = getTodayKey();
 
-  await client.rPush(key, JSON.stringify(pedido));
+  // Obtener cantidad actual de pedidos del día
+  const totalPedidos = await client.lLen(key);
+
+  const nuevoPedido = {
+    id: totalPedidos + 1,
+    fecha: new Date().toISOString(),
+    ...pedido
+  };
+
+  await client.rPush(key, JSON.stringify(nuevoPedido));
 
   await setExpirationIfNeeded(key);
+
+  return nuevoPedido;
 };
 
 // Obtener pedidos del día
