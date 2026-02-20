@@ -9,6 +9,7 @@ const client = createClient({
     host: REDIS_HOST,
     port: REDIS_PORT,
   },
+  username: process.env.REDIS_USERNAME,
   password: REDIS_PASSWORD,
 });
 
