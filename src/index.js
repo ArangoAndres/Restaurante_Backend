@@ -10,8 +10,16 @@ const start = async () => {
   try {
     await connectRedis();
 
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       console.log(`🚀 Servidor en puerto ${PORT}`);
+    });
+
+    process.on("SIGTERM", () => {
+      console.log("SIGTERM recibido");
+      server.close(() => {
+        console.log("Servidor cerrado");
+        process.exit(0);
+      });
     });
 
   } catch (error) {
