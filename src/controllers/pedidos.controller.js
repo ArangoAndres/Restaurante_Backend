@@ -31,3 +31,57 @@ export const removePedidos = async (req, res) => {
     res.status(500).json({ error: "Error eliminando pedidos" });
   }
 };
+
+export const fetchPedidosCentro = async (req, res) => {
+  try {
+    const pedidos = await getPedidos();
+
+    const filtrados = pedidos.filter(
+      p => p.restaurante?.toLowerCase() === "centro"
+    );
+
+    res.json(filtrados);
+
+  } catch (error) {
+    res.status(500).json({ error: "Error obteniendo pedidos centro" });
+  }
+};
+
+export const fetchPedidosBolivar = async (req, res) => {
+  try {
+    const pedidos = await getPedidos();
+
+    const filtrados = pedidos.filter(
+      p => p.restaurante?.toLowerCase() === "bolivar"
+    );
+
+    res.json(filtrados);
+
+  } catch (error) {
+    res.status(500).json({ error: "Error obteniendo pedidos bolivar" });
+  }
+};
+
+export const fetchPedidoBolivarById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const pedidos = await getPedidos();
+    
+    const pedido = pedidos.find(
+      p =>
+      
+       Number(p.id) === Number(id)
+    );
+   
+    
+
+    if (!pedido) {
+      return res.status(404).json({ error: "Pedido no encontrado" });
+    }
+
+    res.json(pedido);
+
+  } catch (error) {
+    res.status(500).json({ error: "Error obteniendo pedido" });
+  }
+};
