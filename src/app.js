@@ -18,7 +18,9 @@ app.use((req, res, next) => {
   next();
 });
 
-
+app.get('/', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
 app.use(express.json());
 app.use("/api/redis", redisRoutes);
 

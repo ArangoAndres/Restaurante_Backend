@@ -9,10 +9,9 @@ const PORT = process.env.PORT || 3000;
 const start = async () => {
   try {
     await connectRedis();
-
-    const server = app.listen(PORT, () => {
-      console.log(`🚀 Servidor en puerto ${PORT}`);
-    });
+const server = app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Servidor en puerto ${PORT}`);
+});
 
     process.on("SIGTERM", () => {
       console.log("SIGTERM recibido");
