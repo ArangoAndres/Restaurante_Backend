@@ -17,6 +17,10 @@ app.use((req, res, next) => {
   res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
   next();
 });
+app.get("/", (req, res) => {
+  res.send("Backend funcionando");
+});
+
 app.use(express.json());
 app.use("/api/redis", redisRoutes);
 
