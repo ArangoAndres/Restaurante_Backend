@@ -58,3 +58,62 @@ export const deletePedidos = async () => {
   const key = getTodayKey();
   await client.del(key);
 };
+
+// Actualizar un pedido dentro de la lista por su ID
+export const updatePedidoEstado = async (id, nuevoEstado) => {
+  const key = getTodayKey();
+  const pedidos = await client.lRange(key, 0, -1);
+
+  for (let i = 0; i < pedidos.length; i++) {
+    const pedido = JSON.parse(pedidos[i]);
+
+    if (Number(pedido.id) === Number(id)) {
+      pedido.estado = nuevoEstado;
+      await client.lSet(key, i, JSON.stringify(pedido)); // ← actualiza en el índice correcto
+      return pedido;
+    }
+  }
+
+  return null; // no encontrado
+};
+
+export const deletePedidoById = async (id) => {
+  const key = getTodayKey();
+  const pedidos = await client.lRange(key, 0, -1);
+
+  for (let i = 0; i < pedidos.length; i++) {
+    const pedido = JSON.parse(pedidos[i]);
+
+    if (Number(pedido.id) === Number(id)) {
+      // Redis no tiene "eliminar por índice" directo,
+      // se usa este truco: marcar y luego limpiar
+      await client.lSet(key, i, "__DELETED__");
+      await client.lRem(key, 1, "__DELETED__");
+      return pedido;
+    }
+  }
+
+  return null;
+};
+
+export const updatePedidoCompleto = async (id, datosnuevos) => {
+  const key = getTodayKey();
+  const pedidos = await client.lRange(key, 0, -1);
+
+  for (let i = 0; i < pedidos.length; i++) {
+    const pedido = JSON.parse(pedidos[i]);
+
+    if (Number(pedido.id) === Number(id)) {
+      const pedidoActualizado = {
+        ...datosnuevos,
+        id: pedido.id,       // conservar id original
+        fecha: pedido.fecha  // conservar fecha original
+      };
+
+      await client.lSet(key, i, JSON.stringify(pedidoActualizado));
+      return pedidoActualizado;
+    }
+  }
+
+  return null;
+};

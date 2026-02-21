@@ -1,4 +1,5 @@
-import { savePedido, getPedidos, deletePedidos } from "../services/pedidos.service.js";
+import { savePedido, getPedidos, deletePedidos,deletePedidoById,updatePedidoEstado,updatePedidoCompleto } from "../services/pedidos.service.js";
+
 
 export const createPedido = async (req, res) => {
   try {
@@ -83,5 +84,63 @@ export const fetchPedidoBolivarById = async (req, res) => {
 
   } catch (error) {
     res.status(500).json({ error: "Error obteniendo pedido" });
+  }
+};
+
+
+export const eliminarPedido = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const pedidoEliminado = await deletePedidoById(id);
+    
+    if (!pedidoEliminado) {
+      return res.status(404).json({ message: "Pedido no encontrado" });
+    }
+    
+    res.json({ message: "Pedido eliminado correctamente", pedido: pedidoEliminado });
+    
+  } catch (error) {
+    res.status(500).json({ message: "Error eliminando pedido", error });
+  }
+};
+
+export const actualizarEstadoPago = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { estado } = req.body;
+
+    const pedidoActualizado = await updatePedidoEstado(id, estado);
+
+    if (!pedidoActualizado) {
+      return res.status(404).json({ message: "Pedido no encontrado" });
+    }
+
+    res.json({ message: "Estado actualizado correctamente", pedido: pedidoActualizado });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error actualizando estado" });
+  }
+};
+
+
+export const editarPedido = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const pedidoActualizado = await updatePedidoCompleto(id, req.body);
+
+    if (!pedidoActualizado) {
+      return res.status(404).json({ message: "Pedido no encontrado" });
+    }
+
+    res.json({
+      message: "Pedido actualizado correctamente",
+      pedido: pedidoActualizado
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: "Error actualizando pedido", error });
   }
 };
