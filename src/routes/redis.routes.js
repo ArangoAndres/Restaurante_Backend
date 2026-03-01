@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { testRedis } from "../controllers/redis.controller.js";
 import { createPedido, fetchPedidos, removePedidos, fetchPedidosBolivar, fetchPedidosCentro, fetchPedidoBolivarById ,
-    eliminarPedido,actualizarEstadoPago, editarPedido
+    eliminarPedido,actualizarEstadoPago, editarPedido, fetchPedidosCancelados
 } from "../controllers/pedidos.controller.js";
 
 const router = Router();
@@ -16,5 +16,6 @@ router.get("/pedidos/bolivar/:id", fetchPedidoBolivarById);
 router.delete("/pedidos/:id", eliminarPedido);
 router.patch("/pedidos/:id/pago", actualizarEstadoPago);
 router.put("/pedidos/:id/editar", editarPedido);
+router.get("/cancelados", fetchPedidosCancelados);
 
 export default router;

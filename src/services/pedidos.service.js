@@ -10,14 +10,12 @@ const getTodayKey = () => {
 const setExpirationIfNeeded = async (key) => {
   const ttl = await client.ttl(key);
 
-  // Si no tiene expiración
   if (ttl === -1) {
     const now = new Date();
     const expireAt = new Date();
 
-    expireAt.setHours(22, 0, 0, 0); // 10:00 PM
+    expireAt.setHours(22, 0, 0, 0);
 
-    // Si ya pasaron las 10pm hoy, que expire mañana
     if (now > expireAt) {
       expireAt.setDate(expireAt.getDate() + 1);
     }
@@ -30,7 +28,6 @@ const setExpirationIfNeeded = async (key) => {
 export const savePedido = async (pedido) => {
   const key = getTodayKey();
 
-  // Obtener cantidad actual de pedidos del día
   const totalPedidos = await client.lLen(key);
 
   const nuevoPedido = {
@@ -40,7 +37,6 @@ export const savePedido = async (pedido) => {
   };
 
   await client.rPush(key, JSON.stringify(nuevoPedido));
-
   await setExpirationIfNeeded(key);
 
   return nuevoPedido;
@@ -69,12 +65,12 @@ export const updatePedidoEstado = async (id, nuevoEstado) => {
 
     if (Number(pedido.id) === Number(id)) {
       pedido.estado = nuevoEstado;
-      await client.lSet(key, i, JSON.stringify(pedido)); // ← actualiza en el índice correcto
+      await client.lSet(key, i, JSON.stringify(pedido));
       return pedido;
     }
   }
 
-  return null; // no encontrado
+  return null;
 };
 
 export const deletePedidoById = async (id) => {
@@ -85,8 +81,8 @@ export const deletePedidoById = async (id) => {
     const pedido = JSON.parse(pedidos[i]);
 
     if (Number(pedido.id) === Number(id)) {
-      // Redis no tiene "eliminar por índice" directo,
-      // se usa este truco: marcar y luego limpiar
+      await savePedidoCancelado(pedido); // ← guarda en cancelados antes de eliminar
+
       await client.lSet(key, i, "__DELETED__");
       await client.lRem(key, 1, "__DELETED__");
       return pedido;
@@ -106,8 +102,8 @@ export const updatePedidoCompleto = async (id, datosnuevos) => {
     if (Number(pedido.id) === Number(id)) {
       const pedidoActualizado = {
         ...datosnuevos,
-        id: pedido.id,       // conservar id original
-        fecha: pedido.fecha  // conservar fecha original
+        id: pedido.id,
+        fecha: pedido.fecha
       };
 
       await client.lSet(key, i, JSON.stringify(pedidoActualizado));
@@ -116,4 +112,34 @@ export const updatePedidoCompleto = async (id, datosnuevos) => {
   }
 
   return null;
+};
+
+// ---- CANCELADOS ----
+
+const getCanceladosKey = () => {
+  const today = new Date().toISOString().split("T")[0];
+  return `pedidos_cancelados:${today}`;
+};
+
+export const savePedidoCancelado = async (pedido) => {
+  const key = getCanceladosKey();
+
+  const total = await client.lLen(key);
+
+  const pedidoCancelado = {
+    ...pedido,
+    canceladoEn: new Date().toISOString(),
+    canceladoId: total + 1
+  };
+
+  await client.rPush(key, JSON.stringify(pedidoCancelado));
+  await setExpirationIfNeeded(key);
+
+  return pedidoCancelado;
+};
+
+export const getCanceladosPedidos = async () => {
+  const key = getCanceladosKey();
+  const cancelados = await client.lRange(key, 0, -1);
+  return cancelados.map(p => JSON.parse(p));
 };

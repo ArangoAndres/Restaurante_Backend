@@ -1,5 +1,12 @@
-import { savePedido, getPedidos, deletePedidos,deletePedidoById,updatePedidoEstado,updatePedidoCompleto } from "../services/pedidos.service.js";
-
+import {
+  savePedido,
+  getPedidos,
+  deletePedidos,
+  deletePedidoById,
+  updatePedidoEstado,
+  updatePedidoCompleto,
+  getCanceladosPedidos
+} from "../services/pedidos.service.js";
 
 export const createPedido = async (req, res) => {
   try {
@@ -7,8 +14,8 @@ export const createPedido = async (req, res) => {
       return res.status(400).json({ error: "Pedido vacío" });
     }
 
- await savePedido(req.body);
-res.json({ message: "Pedido guardado correctamente" });
+    await savePedido(req.body);
+    res.json({ message: "Pedido guardado correctamente" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error guardando pedido" });
@@ -42,7 +49,6 @@ export const fetchPedidosCentro = async (req, res) => {
     );
 
     res.json(filtrados);
-
   } catch (error) {
     res.status(500).json({ error: "Error obteniendo pedidos centro" });
   }
@@ -57,7 +63,6 @@ export const fetchPedidosBolivar = async (req, res) => {
     );
 
     res.json(filtrados);
-
   } catch (error) {
     res.status(500).json({ error: "Error obteniendo pedidos bolivar" });
   }
@@ -67,39 +72,30 @@ export const fetchPedidoBolivarById = async (req, res) => {
   try {
     const { id } = req.params;
     const pedidos = await getPedidos();
-    
-    const pedido = pedidos.find(
-      p =>
-      
-       Number(p.id) === Number(id)
-    );
-   
-    
+
+    const pedido = pedidos.find(p => Number(p.id) === Number(id));
 
     if (!pedido) {
       return res.status(404).json({ error: "Pedido no encontrado" });
     }
 
     res.json(pedido);
-
   } catch (error) {
     res.status(500).json({ error: "Error obteniendo pedido" });
   }
 };
 
-
 export const eliminarPedido = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const pedidoEliminado = await deletePedidoById(id);
-    
+
     if (!pedidoEliminado) {
       return res.status(404).json({ message: "Pedido no encontrado" });
     }
-    
+
     res.json({ message: "Pedido eliminado correctamente", pedido: pedidoEliminado });
-    
   } catch (error) {
     res.status(500).json({ message: "Error eliminando pedido", error });
   }
@@ -117,13 +113,11 @@ export const actualizarEstadoPago = async (req, res) => {
     }
 
     res.json({ message: "Estado actualizado correctamente", pedido: pedidoActualizado });
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error actualizando estado" });
   }
 };
-
 
 export const editarPedido = async (req, res) => {
   try {
@@ -139,8 +133,16 @@ export const editarPedido = async (req, res) => {
       message: "Pedido actualizado correctamente",
       pedido: pedidoActualizado
     });
-
   } catch (error) {
     res.status(500).json({ message: "Error actualizando pedido", error });
+  }
+};
+
+export const fetchPedidosCancelados = async (req, res) => {
+  try {
+    const cancelados = await getCanceladosPedidos();
+    res.json(cancelados);
+  } catch (error) {
+    res.status(500).json({ error: "Error obteniendo pedidos cancelados" });
   }
 };
