@@ -5,7 +5,8 @@ import {
   deletePedidoById,
   updatePedidoEstado,
   updatePedidoCompleto,
-  getCanceladosPedidos
+  getCanceladosPedidos,
+  getCanceladoById
 } from "../services/pedidos.service.js";
 
 export const createPedido = async (req, res) => {
@@ -88,8 +89,9 @@ export const fetchPedidoBolivarById = async (req, res) => {
 export const eliminarPedido = async (req, res) => {
   try {
     const { id } = req.params;
+    const { razon_cancelacion } = req.body;
 
-    const pedidoEliminado = await deletePedidoById(id);
+    const pedidoEliminado = await deletePedidoById(id, razon_cancelacion);
 
     if (!pedidoEliminado) {
       return res.status(404).json({ message: "Pedido no encontrado" });
@@ -144,5 +146,21 @@ export const fetchPedidosCancelados = async (req, res) => {
     res.json(cancelados);
   } catch (error) {
     res.status(500).json({ error: "Error obteniendo pedidos cancelados" });
+  }
+};
+
+
+export const fetchCanceladoById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const pedido = await getCanceladoById(id);
+
+    if (!pedido) {
+      return res.status(404).json({ error: "Pedido cancelado no encontrado" });
+    }
+
+    res.json(pedido);
+  } catch (error) {
+    res.status(500).json({ error: "Error obteniendo pedido cancelado" });
   }
 };

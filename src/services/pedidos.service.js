@@ -73,7 +73,7 @@ export const updatePedidoEstado = async (id, nuevoEstado) => {
   return null;
 };
 
-export const deletePedidoById = async (id) => {
+export const deletePedidoById = async (id, razon_cancelacion) => {
   const key = getTodayKey();
   const pedidos = await client.lRange(key, 0, -1);
 
@@ -81,11 +81,17 @@ export const deletePedidoById = async (id) => {
     const pedido = JSON.parse(pedidos[i]);
 
     if (Number(pedido.id) === Number(id)) {
-      await savePedidoCancelado(pedido); // ← guarda en cancelados antes de eliminar
+      const pedidoConRazon = {
+        ...pedido,
+        razon_cancelacion: razon_cancelacion || null,
+        estado_pedido: "Cancelado"
+      };
+
+      await savePedidoCancelado(pedidoConRazon);
 
       await client.lSet(key, i, "__DELETED__");
       await client.lRem(key, 1, "__DELETED__");
-      return pedido;
+      return pedidoConRazon;
     }
   }
 
@@ -142,4 +148,18 @@ export const getCanceladosPedidos = async () => {
   const key = getCanceladosKey();
   const cancelados = await client.lRange(key, 0, -1);
   return cancelados.map(p => JSON.parse(p));
+};
+
+export const getCanceladoById = async (canceladoId) => {
+  const key = getCanceladosKey();
+  const cancelados = await client.lRange(key, 0, -1);
+
+  for (const item of cancelados) {
+    const pedido = JSON.parse(item);
+    if (Number(pedido.canceladoId) === Number(canceladoId)) {
+      return pedido;
+    }
+  }
+
+  return null;
 };
